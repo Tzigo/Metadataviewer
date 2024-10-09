@@ -1,0 +1,377 @@
+﻿<Window x:Class="Metadataviewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Metadataviewer" 
+        mc:Ignorable="d"
+       Title="MetaDataViewer" Width="930" Background="{Binding BackgroundColor}" MinWidth="752" Height="590" MinHeight="590" WindowStartupLocation="CenterScreen" AllowDrop="True" Icon="/Resources/00026-2348884663.ico" SizeChanged="Window_SizeChanged">
+    <TabControl x:Name="MainTab" Width="auto" Background="{Binding BackgroundColor}" AllowDrop="True" Padding="0" BorderThickness="0,1,0,2">
+        <TabControl.Resources>
+            <Style TargetType="TabItem">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="{Binding DecorationsColor}" Width="60" CornerRadius="4,4,0,0" Margin="0,0,0,0" Padding="5,0,5,0">
+                                <ContentPresenter Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="10,2" TextElement.FontWeight="SemiBold"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="LightSkyBlue" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="False">
+                                    <Setter TargetName="Border" Property="Background" Value="{Binding DecorationsColor}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Splitter" TargetType="Thumb">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Width" Value="7"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Setter Property="Background" Value="{Binding ForegroundColor}"/>
+            </Style>
+        </TabControl.Resources>
+        <TabItem x:Name="ReadTab" Header="Read" FontWeight="Bold" AllowDrop="True" Height="21" VerticalAlignment="Top">
+            <Grid x:Name="MainGrid" AllowDrop="True" Background="{Binding BackgroundColor}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="7"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="7"/>
+                    <ColumnDefinition Width="400"/>
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="LeftGrid" Background="{Binding BackgroundColor}" Grid.Column="0" Width="300" MinWidth="160" MaxWidth="390" Grid.ColumnSpan="2"/>
+                <Thumb x:Name="leftsplitter" Style="{StaticResource Splitter}" Grid.Column="1" DragDelta="LeftThumb_DragDelta" MouseEnter="leftsplitter_MouseEnter" MouseLeave="leftsplitter_MouseLeave" HorizontalAlignment="Stretch"/>
+                <Grid x:Name="CenterGrid" Grid.Column="2" MinWidth="200" Background="{Binding BackgroundColor}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MinHeight="30" Height="30" MaxHeight="30"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="0"/>
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="TopGrid" Grid.Row="0" MinWidth="200" Height="30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MinWidth="60" Width="*"/>
+                            <ColumnDefinition MinWidth="30" Width="30" MaxWidth="30"/>
+                            <ColumnDefinition MinWidth="30" Width="30" MaxWidth="30"/>
+                            <ColumnDefinition MinWidth="30" Width="30" MaxWidth="30"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="Tbox"  Text="{Binding FolderPath}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Grid.Column="0" MinWidth="20" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" BorderThickness="0" TextChanged="Tbox_TextChanged"/>
+                        <Button Name="SmallBtn" Grid.Column="1" Height="30" Width="30" Background="{Binding CheckSmall}" ToolTip="Small thumbnails" BorderThickness="0" Click="ThumbSizeBtn_Click">
+                            <Image Height="12" Width="12" Source="{Binding ResizeBtnImage}"/>
+                        </Button>
+                        <Button Name="MediumBtn" Grid.Column="2" Height="30" Width="30" Background="{Binding CheckMedium}" ToolTip="Medium thumbnails" BorderThickness="0" Click="ThumbSizeBtn_Click">
+                            <Image Height="18" Width="18" Source="{Binding ResizeBtnImage}"/>
+                        </Button>
+                        <Button Name="LargeBtn" Grid.Column="3" Height="30" Width="30" Background="{Binding CheckLarge}" ToolTip="Large thumbnails" BorderThickness="0" Click="ThumbSizeBtn_Click">
+                            <Image Height="25" Width="25" Source="{Binding ResizeBtnImage}"/>
+                        </Button>
+                    </Grid>
+                    <Grid x:Name="stack" Grid.Row="1" MinWidth="200" Width="300">
+                        <Image Source="{Binding DragnDropImage}" HorizontalAlignment="Center" VerticalAlignment="Center" Height="100" Width="100" Opacity="0.4" Visibility="{Binding Vis}"/>
+                        <ItemsControl x:Name="ImageViewer" ItemsSource="{Binding ImageCollection}" Background="{Binding BackgroundColor}" Height="{Binding ActualHeight, ElementName=stack, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="5" Padding="5" Background="{Binding _Brush}" BorderThickness="1" BorderBrush="{Binding _DecorationsColor}" Margin="5">
+                                        <StackPanel Orientation="Vertical" Tag="{Binding Path}" VerticalAlignment="Center" HorizontalAlignment="Center" MouseLeftButtonDown="ThumbNail_MouseLeftButtonDown">
+                                            <Image x:Name="ThumbImage" Source="{Binding Image}" Tag="{Binding Path}" HorizontalAlignment="Center" VerticalAlignment="Top" Stretch="Uniform" MaxHeight="{Binding SelectedSize}" MaxWidth="{Binding SelectedSize}"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="{Binding _Foreground}" MaxWidth="{Binding SelectedSize}" TextWrapping="Wrap" Tag="{Binding Path}" HorizontalAlignment="Center" VerticalAlignment="Bottom"  TextAlignment="Center" FontSize="10"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                        </ItemsControl>
+                    </Grid>
+                </Grid>
+                <Thumb x:Name="RightThumb" Grid.Column="3"  Style="{StaticResource Splitter}" DragDelta="RightThumb_DragDelta" MouseEnter="RightThumb_MouseEnter" MouseLeave="RightThumb_MouseLeave" HorizontalAlignment="Stretch"/>
+                <Grid x:Name="RightGrid" Width="400" MinWidth="300" MaxWidth="600" Grid.Column="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Button Grid.Row="0" x:Name="SendToEditBtn" HorizontalAlignment="Center" Background="{Binding BackgroundColor}" VerticalAlignment="Center" HorizontalContentAlignment="Center" Click="SendToEditBtn_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value= "2"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Send to Edit"  Foreground="{Binding ForegroundColor}" Background="{Binding BackgroundColor}" Padding="0,0,0,0" HorizontalAlignment="Left" Width="70" Margin="5,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <Image Height="25" Width="25" Source="{Binding EditBtnImage}" HorizontalAlignment="Right" Margin="5,0,5,0"/>
+                        </StackPanel>
+                    </Button>
+                    <ScrollViewer Grid.Row="1" Height="{Binding ActualHeight, ElementName=stack, Mode=OneWay}" x:Name="RightGridScrollViewer" MinWidth="300" MaxWidth="600" VerticalContentAlignment="Top" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
+                        <StackPanel x:Name="pnginfo" Width="auto" HorizontalAlignment="Stretch" Height="Auto" VerticalAlignment="Top" MouseMove="pnginfo_MouseMove" Background="{Binding BackgroundColor}">
+                            <Grid Background="{Binding BackgroundColor}">
+                                <Label Content="Prompt" FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" VerticalContentAlignment="Stretch" HorizontalAlignment="Left"/>
+                            </Grid>
+                            <Grid x:Name="PromptTboxGrid" MinHeight="80">
+                                <TextBox Text="{Binding Prompt}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" BorderBrush="{Binding DecorationsColor}" MinHeight="80" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility = "Auto" BorderThickness="1" IsReadOnly="True"/>
+                                <Grid x:Name="Prompttxbresizerbtn" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0,0,6,2" MouseLeftButtonDown="Prompttxbresizerbtn_MouseLeftButtonDown" MouseEnter="Prompttxbresizerbtn_MouseEnter" MouseLeave="Prompttxbresizerbtn_MouseLeave">
+                                    <Line Stroke="Gray" X1="17" Y1="19" X2="19" Y2="17" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="14" Y1="19" X2="19" Y2="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="11" Y1="19" X2="19" Y2="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="8" Y1="19" X2="19" Y2="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="5" Y1="19" X2="19" Y2="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Grid>
+                            </Grid>
+                            <Label Content="Negative prompt" Foreground="{Binding ForegroundColor}" Background="{Binding BackgroundColor}" FontWeight="Bold"  Padding="5,2"/>
+                            <Grid x:Name="NegativePromptTboxGrid" MinHeight="80">
+                                <TextBox Text="{Binding NegativePrompt}" Foreground="{Binding ForegroundColor}" Background="{Binding BackgroundColor}" BorderBrush="{Binding DecorationsColor}" MinHeight="70" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility = "Auto" BorderThickness="1" IsReadOnly="True"/>
+                                <Grid x:Name="NegativePromptResizeBtn" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0,0,6,2" MouseLeftButtonDown="NegativePromptResizeBtn_MouseLeftButtonDown" MouseEnter="NegativePromptResizeBtn_MouseEnter" MouseLeave="NegativePromptResizeBtn_MouseLeave">
+                                    <Line Stroke="Gray" X1="17" Y1="19" X2="19" Y2="17" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="14" Y1="19" X2="19" Y2="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="11" Y1="19" X2="19" Y2="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="8" Y1="19" X2="19" Y2="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="5" Y1="19" X2="19" Y2="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Grid>
+                            </Grid>
+                            <StackPanel Orientation="Vertical" Margin="0,3,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="ModelTextButton" Background="{Binding BackgroundColor}" VerticalContentAlignment="Center" HorizontalAlignment="Left" Click="Model_LoraBtnClick">
+                                        <Button.Content>
+                                            <Image Height="22" Width="22" Source="{Binding SwitchBtnImage}"/>
+                                        </Button.Content>
+                                    </Button>
+                                    <Label Name="ModelLabel" Content="Click to view hash" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label x:Name="modellabel" Content="Model:" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontWeight="Bold"/>
+                                    <TextBox x:Name="modelTb" Text="{Binding Checkpoint}"  Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=modellabel, Mode=OneWay}" Width="251" TextWrapping="NoWrap" ScrollViewer.HorizontalScrollBarVisibility="Auto" BorderThickness="0" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label x:Name="stepslabel" Content="Steps:"  FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                                <TextBox Text="{Binding Steps}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=stepslabel, Mode=OneWay}" Width="263" VerticalContentAlignment="Center" BorderThickness="0"  IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label x:Name="cfglabel" Content="CFG:" FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                                <TextBox Text="{Binding CFG}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=cfglabel, Mode=OneWay}" Width="263" VerticalContentAlignment="Center" BorderThickness="0" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label x:Name="samplerlabel" Content="Sampler:" FontWeight="Bold"  Height="{Binding ActualHeight, ElementName=samplerTb, Mode=OneWay}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                                <TextBox x:Name="samplerTb" Text="{Binding Sampler}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Width="240" VerticalContentAlignment="Center" TextWrapping="NoWrap" ScrollViewer.HorizontalScrollBarVisibility="Auto" BorderThickness="0" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label x:Name="seedlabel" Content="Seed:" FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                                <TextBox Text="{Binding Seed}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=seedlabel, Mode=OneWay}" Width="263" VerticalContentAlignment="Center" BorderThickness="0" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label x:Name="sizelabel" Content="Size:" FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                                <TextBox Text="{Binding Size}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=sizelabel, Mode=OneWay}" Width="263" VerticalContentAlignment="Center" BorderThickness="0"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" Margin="0,3,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="LoraTextButton" Background="{Binding BackgroundColor}" VerticalContentAlignment="Center" HorizontalAlignment="Left" Click="Model_LoraBtnClick">
+                                        <Button.Content>
+                                            <Image Height="22" Width="22" Source="{Binding SwitchBtnImage}"/>
+                                        </Button.Content>
+                                    </Button>
+                                    <Label x:Name="LoraLabel" Content="Click to view hash" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label x:Name="loralabel" Content="Lora:" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontWeight="Bold"/>
+                                    <TextBox x:Name="loraTb" Text="{Binding Lora}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding ActualHeight, ElementName=loralabel, Mode=OneWay}" Width="251" TextWrapping="NoWrap" ScrollViewer.HorizontalScrollBarVisibility="Auto" BorderThickness="0" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Label Content="Miscellaneous"  FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
+                            <Grid x:Name="MiscellaneousTboxGrid" MinHeight="80">
+                                <TextBox Text="{Binding Miscellaneous}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" MinHeight="80" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility = "Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
+                                <Grid x:Name="MiscResizeBtn" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="6,2" MouseLeftButtonDown="MiscResizeBtn_MouseLeftButtonDown" MouseEnter="MiscResizeBtn_MouseEnter" MouseLeave="MiscResizeBtn_MouseLeave">
+                                    <Line Stroke="Gray" X1="17" Y1="19" X2="19" Y2="17" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="14" Y1="19" X2="19" Y2="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="11" Y1="19" X2="19" Y2="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="8" Y1="19" X2="19" Y2="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line Stroke="Gray" X1="5" Y1="19" X2="19" Y2="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Grid>
+                            </Grid>
+                            <StackPanel Height="60" MinHeight="60" MaxHeight="60" Background="{Binding BackgroundColor}" Margin="0,30,0,30"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </TabItem>
+
+                                                                                                    <!--IsSelected="True"-->
+        <TabItem x:Name="EditTab" Header="Edit" FontWeight="Bold" Height="21" VerticalAlignment="Top">
+            <Grid AllowDrop="True" Background="{Binding BackgroundColor}" Width="{Binding ActualWidth, ElementName=MainGrid}" Height="{Binding ActualHeight, ElementName=MainGrid}">
+                <Grid.Resources>
+                    <Style TargetType="Grid">
+                        <Setter Property="Background" Value="{Binding BackgroundColor}"/>
+                    </Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Background" Value="{Binding BackgroundColor}"/>
+                    </Style>
+                    <Style TargetType="Label">
+                        <Setter Property="Foreground" Value="{Binding ForegroundColor}"/>
+                        <Setter Property="Background" Value="{Binding BackgroundColor}"/>
+                        <Setter Property="Height" Value="30"/>
+                    </Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Foreground" Value="{Binding ForegroundColor}"/>
+                        <Setter Property="Background" Value="{Binding BackgroundColor}"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="BorderBrush" Value="{Binding DecorationsColor}"/>
+                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="Margin" Value="1"/>
+                    </Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{Binding ForegroundColor}"/>
+                        <Setter Property="Background" Value="{Binding BackgroundColor}"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="2"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="EditImgPanel" Grid.Column="0" Margin="0,0,2,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="85" MinHeight="85"/>
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="wrap" Grid.Row="0">
+                        <Image x:Name="EditImg" Source="{Binding EditImage}" Stretch="Uniform" MaxWidth="{Binding ElementName=wrap, Path=ActualWidth}" MaxHeight="{Binding ElementName=wrap, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Border Background="{Binding BackgroundColor}" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="4">
+                                <StackPanel x:Name="SaveBtn"  Background="{Binding BackgroundColor}" Width="40" MouseDown="SaveBtn_MouseDown">
+                                    <Image Height="25" Width="25" Source="{Binding SaveBtnImage}" Margin="0,3,0,0"/>
+                                    <TextBlock Text="Save" FontWeight="Bold" HorizontalAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                                </StackPanel>
+                            </Border>
+                            <ComboBox Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" ItemsSource="{Binding SaveTypList}" SelectedItem="{Binding SaveTyp}" Margin="20,0,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Path=SaveType}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <TextBlock Text="Overwriting the original file is not recommended." Foreground="Red" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <Thumb Grid.Column="1" Width="2" Background="{Binding DecorationsColor}" HorizontalAlignment="Center"/>
+                <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Vertical" Margin="10,10,10,10">
+                        <Border BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="5">
+                            <StackPanel Orientation="Vertical">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="Modelname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <Label Grid.Column="1" Content="{Binding EditCheckpointName}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="{Binding EditCheckpointHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                    <TextBox Grid.Column="1" x:Name="CheckpointHashEditTbox" Text="{Binding EditCheckpoint_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <ItemsControl ItemsSource="{Binding LoraHashEdits}" Background="{Binding BackgroundColor}">
+                            <ItemsControl.Resources>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                </Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                </Style>
+                                <Style TargetType="Label">
+                                    <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
+                                    <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                    <Setter Property="Height" Value="30"/>
+                                </Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
+                                    <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="BorderBrush" Value="{Binding _DecorationsColor}"/>
+                                    <Setter Property="Height" Value="30"/>
+                                    <Setter Property="Margin" Value="1"/>
+                                </Style>
+                                <!--<Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
+                                    <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                </Style>-->
+                            </ItemsControl.Resources>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{Binding _DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="5">
+                                        <StackPanel Orientation="Vertical">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Content="Loraname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                <Label Grid.Column="1" Content="{Binding Name}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
+                                            </Grid>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Content="{Binding EditLoraHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                                <TextBox Grid.Column="1" x:Name="CheckpointHashEditTbox" Background="{Binding _BackgroundColor}" Foreground="{Binding _ForegroundColor}" Text="{Binding EditLora_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                                <!--<TextBox Grid.Column="1" x:Name="CheckpointHashEditTbox" BorderThickness="1" Background="{Binding _BackgroundColor}" Foreground="{Binding _ForegroundColor}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>-->
+
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <ItemsPresenter />
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>
