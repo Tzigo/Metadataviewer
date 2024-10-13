@@ -806,7 +806,7 @@ namespace Metadataviewer
                     newhashes[i] = hashlist[i][1];
                 }
 
-                error = metadata.SetEditData(originalpath, newpath, oldhashes, newhashes);
+                error = metadata.ReplaceHashes(originalpath, newpath, oldhashes, newhashes);
                 if (error != null)
                 {
                     MessageBox.Show(error);

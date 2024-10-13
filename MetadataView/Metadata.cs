@@ -111,7 +111,7 @@ namespace ImageMetadataParser
 
         }
 
-        public string SetEditData(string originalfilepath, string newfilepath, string[] oldhashes, string[] newhashes)
+        public string ReplaceHashes(string originalfilepath, string newfilepath, string[] oldhashes, string[] newhashes)
         {
             return MetadataEditor.ReplaceHash(originalfilepath, newfilepath, oldhashes, newhashes);
         }
