@@ -163,53 +163,6 @@ namespace ImageMetadataParser
 
     internal class MetadataEditor
     {
-        private class DestructuredPNG
-        {
-            public byte[] PreData;
-            public Dictionary<string, string> metadata;
-            public byte[] PostData;
-
-            private static Dictionary<byte[], Func<byte[], Tuple<string, string>>> pattern_dict = PngUtil.pattern_dict;
-
-            public DestructuredPNG(string path)
-            {
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    byte[] buffer = new byte[1] { 0x00 };
-                    int position = 0;
-                    Dictionary<int, Func<byte[], Tuple<string, string>>> positions = new Dictionary<int, Func<byte[], Tuple<string, string>>>();
-                    List<byte> finalData = new List<byte>();
-
-                    byte[][] patterns = pattern_dict.Keys.ToArray();
-                    int[] matches = new int[patterns.Length];
-
-                    for (int i = 0; i < matches.Length; i++)
-                    {
-                        matches[i] = 0;
-                    }
-
-                    while (fs.Read(buffer, 0, buffer.Length) > 0)
-                    {
-                        for (int i = 0; i < pattern_dict.Count; i++)
-                        {
-                            byte[] pattern = patterns[i];
-                            if (pattern[matches[i]] == buffer[0]) matches[i]++;
-                            else matches[i] = 0;
-
-                            if (matches[i] == pattern.Length)
-                            {
-                                positions.Add(position + 1 - pattern.Length, pattern_dict[pattern]);
-                                matches[i] = 0;
-                            }
-                        }
-
-                        position++;
-                    }
-                }
-
-            }
-        }
-
         private class MetadataBlock
         {
             public byte[] header = new byte[4];
