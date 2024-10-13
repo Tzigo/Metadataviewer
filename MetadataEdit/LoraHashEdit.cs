@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Metadataviewer
@@ -23,8 +24,14 @@ namespace Metadataviewer
         public string EditLora_New_Hash
         {
             get => _editlora_new_hash;   
-            set => SetProperty(ref _editlora_new_hash, value);
-        }
+            set
+            {
+                SetProperty(ref _editlora_new_hash, value);
+                SetEditVisibility();
+            }
+
+
+    }
 
         private SolidColorBrush backgroundcolor;
         public SolidColorBrush _BackgroundColor
@@ -47,5 +54,40 @@ namespace Metadataviewer
             set => SetProperty(ref decorationscolor, value);
         }
 
+        private Visibility editlorafalse = Visibility.Hidden;
+        public Visibility _EditLoraFalse
+        {
+            get => editlorafalse;
+            set => SetProperty(ref editlorafalse, value);
+        }
+
+        private Visibility editloratrue = Visibility.Hidden;
+        public Visibility _EditLoraTrue
+        {
+            get => editloratrue;
+            set => SetProperty(ref editloratrue, value);
+        }
+
+        private void SetEditVisibility()
+        {
+            if (EditLora_New_Hash.Length == 0)
+            {
+                _EditLoraFalse = Visibility.Hidden;
+                _EditLoraTrue = Visibility.Hidden;
+            }
+            if (EditLora_New_Hash.Length >= 1)
+            {
+                if (EditLora_New_Hash.Length == 10)
+                {
+                    _EditLoraFalse = Visibility.Hidden;
+                    _EditLoraTrue = Visibility.Visible;
+                }
+                else
+                {
+                    _EditLoraFalse = Visibility.Visible;
+                    _EditLoraTrue = Visibility.Hidden;
+                }
+            }
+        }
     }
 }

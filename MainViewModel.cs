@@ -7,11 +7,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using ImageMetadataParser;
+using Microsoft.Win32;
+using Path = System.IO.Path;
 //using Brush = System.Windows.Media.Brush;
 
 namespace Metadataviewer
@@ -46,7 +50,7 @@ namespace Metadataviewer
 
             ImageCollection = new ObservableCollection<ThumbNail>();
             ImageCollection.CollectionChanged += ImageCollection_CollectionChanged;
-
+            SuccessTimer.Elapsed += SuccessTimer_Elapsed;
             SelectedImageSize = 100;
         }
 
@@ -59,6 +63,8 @@ namespace Metadataviewer
             mainWindow.EditBtnClick += MainWindow_EditBtnClick;
             mainWindow.SaveBtnClick += MainWindow_SaveBtnClick;
             mainWindow.Name_HashSwitch += MainWindow_Name_HashSwitch;
+            mainWindow.EditGrid.DragOver += EditGrid_DragOver;
+            mainWindow.EditGrid.Drop += EditGrid_Drop;
         }
 
         private void CreateImages()
@@ -86,6 +92,7 @@ namespace Metadataviewer
 
         #region Drag&Drop
 
+        #region ReadTab
         private void MainTab_DragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(typeof(File))) { e.Effects = DragDropEffects.Copy; }
@@ -99,7 +106,7 @@ namespace Metadataviewer
                 if (dropfiles != null && dropfiles.Length > 0)
                 {
                     IsDrop = true;
-                    LoadThumbs(false, null);
+                    LoadThumbs(false, null, null);
                 }
                 else { dropfiles = null; }
             }
@@ -108,6 +115,36 @@ namespace Metadataviewer
         private bool IsDrop = false;
 
         private string[] dropfiles;
+
+        #endregion
+
+        #region EditTab
+        private void EditGrid_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(File))) { e.Effects = DragDropEffects.Copy; }
+            else { e.Effects = DragDropEffects.None; }
+        }
+
+        private void EditGrid_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                dropfiles = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (dropfiles != null && dropfiles.Length > 0)
+                {
+                    if (IsImage(dropfiles[0]))
+                    {
+                        IsDropItem = true;
+                        GetMetaData(dropfiles[0]);
+                        SetEditData();
+                    }
+                    else { dropfiles = null; }   
+                }
+                else { dropfiles = null; }  
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -121,14 +158,22 @@ namespace Metadataviewer
         {
             if (args.Length > 1)
             {
+                string[] argsfiles = new string[0] {};
                 for (int i = 0; i < args.Length; i++)
                 {
                     if (args[i] != _app && IsImage(args[i]))
                     {
-                        LoadThumbs(true, args[i]);
+                        //argsfiles.Append(args[i]);
+                        LoadThumbs(true, args[i], null);
                     }
                 }
+                //if (argsfiles.Length > 1)
+                //{
+                //    LoadThumbs(false, null, argsfiles);                             ///Vorbereitung um mehrere argsfiles zu unterstützen            
+                //}
+                //else { LoadThumbs(true, argsfiles[0]); }
             }
+
         }
         #endregion
 
@@ -234,10 +279,33 @@ namespace Metadataviewer
             Checkpoint = metadata.CheckpointName;
             CheckpointName = metadata.CheckpointName;   
             CheckpointHash = metadata.CheckpointHash;
+            Steps = metadata.Steps;
+            CFG = metadata.CFG;
+            Sampler = metadata.Sampler;
+            Seed = metadata.Seed;
+            Size = metadata.Size;
             Lora = metadata.LoraNames;
             LoraNames = metadata.LoraNames;
             LoraHashes = metadata.LoraHashes;
             Miscellaneous = metadata.Misc;
+        }
+
+        private void ResetMetaDataView()
+        {
+            Prompt = "";
+            NegativePrompt = "";
+            Checkpoint = "";
+            CheckpointName = "";
+            CheckpointHash = "";
+            Steps = "";
+            CFG = "";
+            Sampler = "";
+            Seed = "";
+            Size = "";
+            Lora =  "";
+            LoraNames = "";
+            LoraHashes = "";
+            Miscellaneous = "";
         }
 
         #endregion
@@ -255,7 +323,7 @@ namespace Metadataviewer
             if (IsImage(FolderPath))
             {
                 ResetImageView();
-                LoadThumbs(true, null);
+                LoadThumbs(true, null, null);
                 metadata.GetMetaData(FolderPath);
                 if (metadata.GetMetaData(FolderPath) != null)
                 {
@@ -266,7 +334,7 @@ namespace Metadataviewer
             else
             {
                 ResetImageView();
-                LoadThumbs(false, null);
+                LoadThumbs(false, null, null);
             }
         }
 
@@ -322,7 +390,7 @@ namespace Metadataviewer
             }
         }
 
-        private void LoadThumbs(bool singleimage, string argsfile)
+        private void LoadThumbs(bool singleimage, string argsfile, string[] argsfiles)
         {
             if (IsDrop && dropfiles != null && dropfiles.Length > 0)
             {
@@ -343,6 +411,7 @@ namespace Metadataviewer
 
                 IsDrop = false;
                 dropfiles = null;
+                FolderPath = null;
             }
             else if (singleimage)
             {
@@ -427,7 +496,8 @@ namespace Metadataviewer
             }
             if (metadata.GetMetaData(FolderPath) != null)
             {
-                /// show error meldung
+                ///show error message
+
             }
             else { SetMetaDataView(); }
         }
@@ -631,7 +701,6 @@ namespace Metadataviewer
         #endregion
 
         #region MetadatEditMethods
-
         private void SetSaveTypList()
         {
             SaveTypList = new ObservableCollection<SaveTyps>()
@@ -646,21 +715,15 @@ namespace Metadataviewer
    
         private void MainWindow_EditBtnClick(object sender, EventArgs e)
         {
-            ResetEditFields();
-
-            EditCheckpointName = metadata.CheckpointName;
-            EditCheckpointHash = metadata.CheckpointHash;
-
-            EditImage = new BitmapImage(new Uri(metadata.OriginalPath, UriKind.Absolute));
-
-            if (metadata.Loras != null && metadata.Loras.Count > 0)
+            if (Path.GetExtension(metadata.OriginalPath).ToLower() != ".png") 
             {
-                LoraHashEdits = new ObservableCollection<LoraHashEdit>();
-                foreach (KeyValuePair<string, string> lora in metadata.Loras)
-                {
-                    LoraHashEdits.Add(LoraEdit(lora.Key, lora.Value));
-                }
+                MessageBox.Show("Currently only PNG files are supported for editing.", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
+
+            IsDropItem = false;
+
+            SetEditData();
         }
 
         private LoraHashEdit LoraEdit(string name, string hash)
@@ -686,60 +749,229 @@ namespace Metadataviewer
 
         private void MainWindow_SaveBtnClick(object sender, EventArgs e)
         {
-            int[] hashes;
-            if (LoraHashEdits != null && LoraHashEdits.Count > 0)
+            List<string[]> hashlist = new List<string[]>();
+            string error = null;
+
+            if (IsDropItem)
             {
-                hashes = new int[LoraHashEdits.Count];
-                int i = 0;
-                string emptys = "";
-                foreach (LoraHashEdit edit in LoraHashEdits)
+                error = metadata.GetMetaData(DropItemPath);
+                if (error != null)
                 {
-                    if (edit.EditLora_New_Hash != null && edit.EditLora_New_Hash != string.Empty && edit.EditLora_New_Hash.Length != 10)
+                    ///show error message
+                    return;
+                }
+                else
+                {
+                    if (Path.GetExtension(metadata.OriginalPath).ToLower() != ".png")
                     {
-                        emptys += "Index " + i.ToString() + "  länge  " + edit.EditLora_New_Hash.Length + Environment.NewLine;
+                        MessageBox.Show("Currently only PNG files are supported for editing.", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+                }
+            }
+
+            hashlist = CheckEditEntrys();
+            string originalpath = metadata.OriginalPath;
+            string newpath = "";
+
+            if (hashlist != null && hashlist.Count > 0)
+            {
+                if (SaveTyp.SaveTypeValue == "Edit")
+                {
+                    string extension = Path.GetExtension(originalpath);
+                    string newfilename = Path.GetFileNameWithoutExtension(originalpath) + ".edit" + Path.GetExtension(originalpath);
+                    newpath = Path.Combine(Path.GetDirectoryName(originalpath), newfilename);
+                }
+                else if (SaveTyp.SaveTypeValue == "Override") { newpath = originalpath; }
+                else
+                {
+                    SaveFileDialog saveFile = new SaveFileDialog()
+                    {
+                        Filter = "PNG files(*.png)|*.png",
+                        InitialDirectory = Path.GetDirectoryName(originalpath),
+                    };
+                    if (saveFile.ShowDialog() == true)
+                    {
+                        if (Path.GetExtension(saveFile.FileName).ToLower() != ".png") { newpath = saveFile.FileName + ".png"; }
+                        else { newpath = saveFile.FileName; }
                     }
                 }
 
-      
+                string[] oldhashes = new string[hashlist.Count];
+                string[] newhashes = new string[hashlist.Count];
 
-                //int a = 0;
-                //foreach (int i1 in hashes)
-                //{
-                //    emptys += "Index " + a.ToString() + "  wert  " + i1 + Environment.NewLine;
-                //    a++;
-                //}
-
-                MessageBox.Show(emptys);
-            }
-
-
-
-
-
-
-            if (EditCheckpoint_New_Hash != null && EditCheckpoint_New_Hash != string.Empty)
-            {
-
-
-                if (EditCheckpoint_New_Hash.Length < 10)
+                for (int i = 0; i < hashlist.Count; i++)
                 {
-                    //MessageBox.Show(EditCheckpointHash.Length.ToString());
-
+                    oldhashes[i] = hashlist[i][0];
+                    newhashes[i] = hashlist[i][1];
                 }
 
-
+                error = metadata.SetEditData(originalpath, newpath, oldhashes, newhashes);
+                if (error != null)
+                {
+                    MessageBox.Show(error);
+                    return;
+                }
+            }
+            else 
+            {
+                MessageBox.Show("An unknown error has occurred!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return; 
             }
 
-
-
-
-
-
-            //MessageBox.Show(SaveTyp.SaveTypeValue);
+            error = GetMetaData(newpath);
+            if (error != null)
+            {
+                MessageBox.Show(error);
+                return;
+            }
+            else
+            {
+                SetEditData();
+                if (IsDropItem)
+                {
+                    EditSaveSuccess = Visibility.Visible;
+                    SuccessTimer.Start();
+                    return;
+                }
+                else
+                { 
+                    UpdateImageViewer_and_MetadataView(newpath, originalpath);
+                    EditSaveSuccess = Visibility.Visible;
+                    SuccessTimer.Start();
+                }
+            }
         }
 
+        private List<string[]> CheckEditEntrys()
+        {
+            int fails = 0;
+            int changes = 0;
+            List<string[]> hashes = new List<string[]>();
 
+            if (EditCheckpointFalse == Visibility.Visible) { fails++; }
+            else if (EditCheckpointTrue == Visibility.Visible)
+            { 
+                changes++;
+                hashes.Add(new string[] { EditCheckpointHash, EditCheckpoint_New_Hash });
+            }
 
+            if (LoraHashEdits != null && LoraHashEdits.Count > 0)
+            {
+                foreach (LoraHashEdit edit in LoraHashEdits)
+                {
+                    if (edit._EditLoraFalse == Visibility.Visible) { fails++; }
+                    else if (edit._EditLoraTrue == Visibility.Visible) 
+                    { 
+                        changes++;
+                        hashes.Add(new string[] { edit.EditLoraHash, edit.EditLora_New_Hash});
+                    }
+                }
+            }
+
+            if (fails > 0)
+            {
+                MessageBox.Show("An AUTOV2 hash must consist of 10 characters." + Environment.NewLine + "Please check your input.", "Notification", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null;
+            }
+            if (fails == 0)
+            {
+                if (changes == 0)
+                {
+                    MessageBox.Show("There are no changes!", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return null;
+                }
+                else { return hashes; }
+            }
+            return null;
+        }
+
+        private string GetMetaData(string path)
+        {
+            string error = metadata.GetMetaData(path);
+            if (error != null) { return error; }
+            else { return null; }
+        }
+
+        private void SetEditData()
+        {
+            ResetEditFields();
+
+            EditCheckpointName = metadata.CheckpointName;
+            EditCheckpointHash = metadata.CheckpointHash;
+            Editfilepath = metadata.OriginalPath;
+
+            EditImage = new BitmapImage(new Uri(metadata.OriginalPath, UriKind.Absolute));
+
+            if (metadata.Loras != null && metadata.Loras.Count > 0)
+            {
+                LoraHashEdits = new ObservableCollection<LoraHashEdit>();
+                foreach (KeyValuePair<string, string> lora in metadata.Loras)
+                {
+                    LoraHashEdits.Add(LoraEdit(lora.Key, lora.Value));
+                }
+            }
+        }
+
+        private void UpdateImageViewer_and_MetadataView(string newpath, string originalpath)
+        {
+            if (SaveTyp.SaveTypeValue == "Override")
+            {
+                if (ImageCollection.Count == 1) { FolderPath = newpath; }
+                else { FolderPath = Path.GetDirectoryName(newpath); }
+                ResetImageView();
+                LoadThumbs(false, null, null);
+                ShowSelectedThumbnailData(newpath);
+            }
+            if (SaveTyp.SaveTypeValue == "Edit")
+            {
+                FileExplorer.SetPath(Path.GetDirectoryName(newpath));
+                ResetImageView();
+                FolderPath = Path.GetDirectoryName(newpath);
+                LoadThumbs(false, null, null);
+                ShowSelectedThumbnailData(newpath);
+            }
+            if (SaveTyp.SaveTypeValue == "Path")
+            {
+                if (newpath == originalpath) { return; }
+                if (Path.GetDirectoryName(newpath) != Path.GetDirectoryName(originalpath)) { return; }
+                else
+                {
+                    FileExplorer.SetPath(Path.GetDirectoryName(newpath));
+                    FolderPath = Path.GetDirectoryName(newpath);
+                    ResetImageView();
+                    LoadThumbs(false, null, null);
+                    ShowSelectedThumbnailData(newpath);
+                }
+            }
+        }
+
+        private void SuccessTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            EditSaveSuccess = Visibility.Hidden;
+        }
+
+        private void SetEditVisibility()
+        {
+            if (EditCheckpoint_New_Hash.Length == 0)
+            {
+                EditCheckpointFalse = Visibility.Hidden;
+                EditCheckpointTrue = Visibility.Hidden;
+            }
+            if (EditCheckpoint_New_Hash.Length > 0)
+            {
+                if (EditCheckpoint_New_Hash.Length == 10)
+                {
+                    EditCheckpointFalse = Visibility.Hidden;
+                    EditCheckpointTrue = Visibility.Visible;
+                }
+                else
+                {
+                    EditCheckpointFalse = Visibility.Visible;
+                    EditCheckpointTrue = Visibility.Hidden;
+                }
+            }
+        }
 
         #endregion
 
@@ -748,10 +980,14 @@ namespace Metadataviewer
         private BitmapImage SaveBtnBlack;
         private BitmapImage SaveBtnWhite;
 
+        private bool IsDropItem = false;
+        private string DropItemPath = null;
+
+        private Timer SuccessTimer = new Timer() { Interval = 3000 };
+
         #endregion
 
         #region Properties MetadataEdit
-
 
         private ObservableCollection<LoraHashEdit> lorahashedits;
         public ObservableCollection<LoraHashEdit> LoraHashEdits
@@ -788,6 +1024,13 @@ namespace Metadataviewer
             set => SetProperty(ref savebtnimg, value);
         }
 
+        private string editfilepath = "";
+        public string Editfilepath
+        {
+            get=> editfilepath; 
+            set => SetProperty(ref editfilepath, value);
+        }
+
         private string editcheckpointname = "";
         public string EditCheckpointName
         {
@@ -802,11 +1045,36 @@ namespace Metadataviewer
             set => SetProperty(ref editcheckpointhash, value);
         }
 
-        private string editcheckpoint_new_hash = "dddddd";
+        private string editcheckpoint_new_hash = "";
         public string EditCheckpoint_New_Hash
         {
             get => editcheckpoint_new_hash;
-            set => SetProperty(ref editcheckpoint_new_hash, value);
+            set
+            {
+                SetProperty(ref editcheckpoint_new_hash, value);
+                SetEditVisibility();
+            }
+    }
+
+        private Visibility editcheckpointfalse = Visibility.Hidden;
+        public Visibility EditCheckpointFalse
+        {
+            get=> editcheckpointfalse;
+            set => SetProperty(ref editcheckpointfalse, value);    
+        }
+
+        private Visibility editcheckpointtrue = Visibility.Hidden;
+        public Visibility EditCheckpointTrue
+        {
+            get => editcheckpointtrue;
+            set=> SetProperty(ref editcheckpointtrue, value);
+        }
+
+        private Visibility editsavesuccess = Visibility.Hidden;
+        public Visibility EditSaveSuccess
+        {
+            get => editsavesuccess;
+            set=>SetProperty(ref editsavesuccess, value);
         }
 
         #endregion
