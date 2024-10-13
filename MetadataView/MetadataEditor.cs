@@ -215,6 +215,7 @@ namespace ImageMetadataParser
             public byte[] header = new byte[4];
             public List<byte> key = new List<byte>();
             public DArray<byte> value = new DArray<byte>();
+            public byte[] oldCrc = new byte[4];
 
             public MetadataBlock(FileStream fs, byte[] length, byte[] header)
             {
@@ -299,12 +300,14 @@ namespace ImageMetadataParser
                         }
                         break;
                 }
+
+                fs.Read(oldCrc, 0, 4);
             }
 
             public byte[] ToArray()
             {
                 byte[] value = this.value.ToArray();
-                byte[] data = new byte[8 + key.Count + 1 + value.Length];
+                byte[] data = new byte[8 + key.Count + 1 + value.Length + 4];
                 byte[] length = BitConverter.GetBytes(key.Count + 1 + value.Length);
                 Array.Reverse(length);
                 length.CopyTo(data, 0);
@@ -312,10 +315,42 @@ namespace ImageMetadataParser
                 key.CopyTo(data, 8);
                 data[8 + key.Count] = 0x00;
                 value.CopyTo(data, 8 + key.Count + 1);
-
+                uint crc = Crc32(data, 4, 4 + key.Count + 1 + value.Length, 0);
+                byte[] x = BitConverter.GetBytes(crc);
+                BitConverter.GetBytes(crc).Reverse().ToArray().CopyTo(data, data.Length - 4);
                 return data;
             }
         }
+
+        private static uint[] crcTable;
+        private static uint Crc32(byte[] stream, int offset, int length, uint crc)
+        {
+            uint c;
+            if (crcTable == null)
+            {
+                crcTable = new uint[256];
+                for (uint n = 0; n <= 255; n++)
+                {
+                    c = n;
+                    for (var k = 0; k <= 7; k++)
+                    {
+                        if ((c & 1) == 1)
+                            c = 0xEDB88320 ^ ((c >> 1) & 0x7FFFFFFF);
+                        else
+                            c = ((c >> 1) & 0x7FFFFFFF);
+                    }
+                    crcTable[n] = c;
+                }
+            }
+            c = crc ^ 0xffffffff;
+            var endOffset = offset + length;
+            for (var i = offset; i < endOffset; i++)
+            {
+                c = crcTable[(c ^ stream[i]) & 255] ^ ((c >> 8) & 0xFFFFFF);
+            }
+            return c ^ 0xffffffff;
+        }
+
 
         public static string ReplaceHash(string oldPath, string newPath, string[] oldHashes, string[] newHashes)
         {
