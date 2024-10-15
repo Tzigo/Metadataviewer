@@ -749,6 +749,7 @@ namespace Metadataviewer
 
         private void MainWindow_SaveBtnClick(object sender, EventArgs e)
         {
+
             List<string[]> hashlist = new List<string[]>();
             string error = null;
 

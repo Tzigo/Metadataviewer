@@ -210,7 +210,6 @@
             </Grid>
         </TabItem>
  
-        <!--IsSelected="True"-->
         <TabItem x:Name="EditTab" Header="Edit" FontWeight="Bold" Height="21" VerticalAlignment="Top">
             <Grid x:Name="EditGrid"  AllowDrop="True" Background="{Binding BackgroundColor}" Height="{Binding ActualHeight, ElementName=MainGrid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"> 
                 <Grid.Resources>
@@ -258,12 +257,40 @@
                                 <TextBlock Text="Saved" Foreground="LimeGreen" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             </Grid>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Background="{Binding BackgroundColor}" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="4">
-                                    <StackPanel x:Name="SaveBtn"  Background="{Binding BackgroundColor}" Width="40" MouseDown="SaveBtn_MouseDown">
-                                        <Image Height="25" Width="25" Source="{Binding SaveBtnImage}" Margin="0,3,0,0"/>
-                                        <TextBlock Text="Save" FontWeight="Bold" HorizontalAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
-                                    </StackPanel>
-                                </Border>
+                                <Button x:Name="SaveBtn" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="SaveBtn_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="brd" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="4" Background="{Binding BackgroundColor}">
+                                                            <StackPanel x:Name="stack" Width="40">
+                                                                <Image Height="25" Width="25" Source="{Binding SaveBtnImage}" Margin="0,3,0,0"/>
+                                                                <TextBlock Text="Save" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{Binding ForegroundColor}"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="brd" Property="BorderBrush">
+                                                                    <Setter.Value>
+                                                                        <SolidColorBrush Color="LightBlue"/>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Trigger>
+                                                            <Trigger Property="Button.IsPressed" Value="True">
+                                                                <Setter TargetName="brd" Property="Background">
+                                                                    <Setter.Value >
+                                                                        <SolidColorBrush Color="LightBlue"/>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                                 <ComboBox Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" ItemsSource="{Binding SaveTypList}" SelectedItem="{Binding SaveTyp}" Margin="20,0,0,0">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>

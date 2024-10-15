@@ -428,15 +428,9 @@ namespace Metadataviewer
 
         public event EventHandler SaveBtnClick;
 
-        private void SaveBtn_MouseDown(object sender, MouseButtonEventArgs e)
+        private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
             OnSaveBtnClick();
         }
-
-        private void Test()
-        {
-            //test
-        }
-
     }
 }

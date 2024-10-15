@@ -67,7 +67,6 @@ namespace Metadataviewer
             get => editloratrue;
             set => SetProperty(ref editloratrue, value);
         }
-
         private void SetEditVisibility()
         {
             if (EditLora_New_Hash.Length == 0)
