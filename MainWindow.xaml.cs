@@ -106,14 +106,14 @@ namespace Metadataviewer
                         pnginfo.Width = rightsize - 10;
                     }
 
-                    MainTab.Width = LeftGrid.ActualWidth + RightGrid.ActualWidth + CenterGrid.ActualWidth + 14;
+                    MainGrid.Width = LeftGrid.ActualWidth + RightGrid.ActualWidth + CenterGrid.ActualWidth + 14;
                     return; 
                 }
 
-                double mainwidth = MainTab.ActualWidth + resize;
+                double mainwidth = MainGrid.ActualWidth + resize;
 
-                MainTab.Width = mainwidth;
-                EditGridResize();
+                MainGrid.Width = mainwidth;
+
 
                 //((StackPanel)Editscroll.Content).Width = Editscroll.Width - 20;
 
@@ -133,30 +133,6 @@ namespace Metadataviewer
             }
         }
 
-        private void EditGridResize()
-        {
-            if (MainGrid.ActualWidth  == 0) { return; } 
-            double mainwidth = MainGrid.ActualWidth;
-            EditGrid.Width = mainwidth;
-
-            double editdiff = mainwidth / 5;
-
-            EditImgPanel.Width = (editdiff * 2) - 4;
-            EditViewGrid.Width = editdiff * 3;
-
-            editstack.Width = (editdiff * 3) - 20;
-            editcheckpointborder.Width = editstack.ActualWidth;
-            LoraEdit.Width = editstack.ActualWidth;
-        }
-
-        private void MainTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (MainTab.SelectedItem == EditTab)
-            {
-                EditTab.UpdateLayout();
-                EditGridResize();
-            }
-        }
 
         private void Tbox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -178,7 +154,7 @@ namespace Metadataviewer
             double newleftwidth = Math.Max(LeftGrid.ActualWidth + e.HorizontalChange, 0);
             LeftGrid.Width = newleftwidth;
             ((UserControl)LeftGrid.Children[0]).Width = newleftwidth;
-            double newcenterwidth = MainTab.ActualWidth - LeftGrid.ActualWidth - RightGrid.ActualWidth - 14;
+            double newcenterwidth = MainGrid.ActualWidth - LeftGrid.ActualWidth - RightGrid.ActualWidth - 14;
             CenterGrid.Width = newcenterwidth;
             foreach (Grid g in CenterGrid.Children)
             {
@@ -199,13 +175,13 @@ namespace Metadataviewer
 
         private void RightThumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            if (MainTab.ActualWidth + e.HorizontalChange >= LeftGrid.ActualWidth + CenterGrid.ActualWidth + RightGrid.Width + 14 && RightGrid.ActualWidth >= RightGrid.MaxWidth) { return; }
+            if (MainGrid.ActualWidth + e.HorizontalChange >= LeftGrid.ActualWidth + CenterGrid.ActualWidth + RightGrid.Width + 14 && RightGrid.ActualWidth >= RightGrid.MaxWidth) { return; }
             if (e.HorizontalChange > 0 && RightGrid.ActualWidth == RightGrid.MinWidth) { return; }
             double newrightwith = Math.Max(RightGrid.ActualWidth - e.HorizontalChange, 0);
             RightGrid.Width = newrightwith;
             RightGridScrollViewer.Width = newrightwith;
             pnginfo.Width = newrightwith - 10;
-            double newcenterwidth = MainTab.ActualWidth - LeftGrid.ActualWidth - RightGrid.ActualWidth - 14;
+            double newcenterwidth = MainGrid.ActualWidth - LeftGrid.ActualWidth - RightGrid.ActualWidth - 14;
             CenterGrid.Width = newcenterwidth;
             foreach (Grid g in CenterGrid.Children)
             {
@@ -412,13 +388,15 @@ namespace Metadataviewer
 
         private void SendToEditBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (ImageViewer.Items.Count > 0 && ThumbNailPath != string.Empty && System.IO.File.Exists(ThumbNailPath))
-            {
-                EditGridResize();
-                OnEditBtnClick();
-                EditTab.IsSelected = true;
-            }
-            else { MessageBox.Show("No Image selected", "Info", MessageBoxButton.OK, MessageBoxImage.Information); }
+   
+            stepslabel.Content = "window: " + this.Width.ToString() + "  maintab: " + MainTab.ActualWidth.ToString() + " maingrid: " + MainGrid.ActualWidth.ToString() + " editgrid: " + MainEditGrid.ActualWidth.ToString();
+            cfglabel.Content = "EditImgPanel:  " + EditImgPanel.ActualWidth + " EditViewGrid: " + EditViewGrid.ActualWidth;
+            //if (ImageViewer.Items.Count > 0 && ThumbNailPath != string.Empty && System.IO.File.Exists(ThumbNailPath))
+            //{
+            //    OnEditBtnClick();
+            //    EditTab.IsSelected = true;
+            //}
+            //else { MessageBox.Show("No Image selected", "Info", MessageBoxButton.OK, MessageBoxImage.Information); }
         }
 
         protected virtual void OnSaveBtnClick()

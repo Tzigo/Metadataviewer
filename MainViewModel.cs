@@ -63,8 +63,8 @@ namespace Metadataviewer
             mainWindow.EditBtnClick += MainWindow_EditBtnClick;
             mainWindow.SaveBtnClick += MainWindow_SaveBtnClick;
             mainWindow.Name_HashSwitch += MainWindow_Name_HashSwitch;
-            mainWindow.EditGrid.DragOver += EditGrid_DragOver;
-            mainWindow.EditGrid.Drop += EditGrid_Drop;
+            mainWindow.MainEditGrid.DragOver += EditGrid_DragOver;
+            mainWindow.MainEditGrid.Drop += EditGrid_Drop;
         }
 
         private void CreateImages()
