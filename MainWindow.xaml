@@ -236,7 +236,7 @@
                         <Setter Property="Background" Value="{Binding BackgroundColor}"/>
                     </Style>
                 </Grid.Resources>
-                <Grid HorizontalAlignment="Center" Width="674" MinWidth="674" MaxWidth="674"> 
+                <Grid x:Name="Test" HorizontalAlignment="Center" Width="674" MinWidth="674" MaxWidth="674"> 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="2"/>
@@ -304,7 +304,7 @@
                         </StackPanel>
                     </Grid>
                     <Thumb Grid.Column="1" Width="2" Background="{Binding DecorationsColor}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-                    <Grid x:Name="EditViewGrid" Grid.Column="2" Width="407" MinWidth="407" MaxWidth="407" Background="{Binding BackgroundColor}">
+                    <Grid x:Name="EditViewGrid" Grid.Column="2" Width="407" MinWidth="407" MaxWidth="407" Background="{Binding BackgroundColor}" Panel.ZIndex="50">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                             <StackPanel x:Name="editstack" Orientation="Vertical" Margin="2,5,2,5">
                                 <Border x:Name="editcheckpointborder" Width="370" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="1,1,1,1" Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center">

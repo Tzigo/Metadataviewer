@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Metadataviewer
 {
@@ -390,13 +391,13 @@ namespace Metadataviewer
         {
    
             stepslabel.Content = "window: " + this.Width.ToString() + "  maintab: " + MainTab.ActualWidth.ToString() + " maingrid: " + MainGrid.ActualWidth.ToString() + " editgrid: " + MainEditGrid.ActualWidth.ToString();
-            cfglabel.Content = "EditImgPanel:  " + EditImgPanel.ActualWidth + " EditViewGrid: " + EditViewGrid.ActualWidth;
-            //if (ImageViewer.Items.Count > 0 && ThumbNailPath != string.Empty && System.IO.File.Exists(ThumbNailPath))
-            //{
-            //    OnEditBtnClick();
-            //    EditTab.IsSelected = true;
-            //}
-            //else { MessageBox.Show("No Image selected", "Info", MessageBoxButton.OK, MessageBoxImage.Information); }
+            cfglabel.Content = "EditImgPanel:  " + EditImgPanel.ActualWidth + " EditViewGrid: " + EditViewGrid.ActualWidth + " Test: " + Test.ActualWidth;
+            if (ImageViewer.Items.Count > 0 && ThumbNailPath != string.Empty && System.IO.File.Exists(ThumbNailPath))
+            {
+                OnEditBtnClick();
+                EditTab.IsSelected = true;
+            }
+            else { MessageBox.Show("No Image selected", "Info", MessageBoxButton.OK, MessageBoxImage.Information); }
         }
 
         protected virtual void OnSaveBtnClick()
