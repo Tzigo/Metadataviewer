@@ -58,7 +58,6 @@ namespace Metadataviewer
             if (userset == 1) { return new DarkTheme(); }
             else { return new LightTheme(); }
         }
-
     }
 
     public class ColorTheme
@@ -73,7 +72,6 @@ namespace Metadataviewer
             this.ForeGround = ForeGround;
             this.Decorations = Decorations;
         }
-
     }
 
     internal class LightTheme : ColorTheme

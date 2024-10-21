@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using ImageMetadataParser;
 using Microsoft.Win32;
 using Path = System.IO.Path;
@@ -25,7 +26,7 @@ namespace Metadataviewer
         MainWindow mainWindow;
         FileExplorerUC FileExplorer;
         public MetaData metadata = new MetaData();
-
+        private DispatcherTimer SuccessTimer = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(3) };
         private ColorTheme colorTheme;
         public MainViewModel()
         {
@@ -50,9 +51,11 @@ namespace Metadataviewer
 
             ImageCollection = new ObservableCollection<ThumbNail>();
             ImageCollection.CollectionChanged += ImageCollection_CollectionChanged;
-            SuccessTimer.Elapsed += SuccessTimer_Elapsed;
+            SuccessTimer.Tick += SuccessTimer_Tick; ;
             SelectedImageSize = 100;
         }
+
+
 
         private void SubscribeMainWindowEvents()
         {
@@ -65,6 +68,13 @@ namespace Metadataviewer
             mainWindow.Name_HashSwitch += MainWindow_Name_HashSwitch;
             mainWindow.MainEditGrid.DragOver += EditGrid_DragOver;
             mainWindow.MainEditGrid.Drop += EditGrid_Drop;
+            mainWindow.ColorDemo += MainWindow_ColorDemo;
+        }
+
+        private void MainWindow_ColorDemo(object sender, EventArgs e)
+        {
+            if (colorTheme.BackGround.Color == Colors.White) { SetColorTheme(1); }
+            else { SetColorTheme(0); }
         }
 
         private void CreateImages()
@@ -453,14 +463,28 @@ namespace Metadataviewer
                 {
                     Name = Path.GetFileName(imgpath),
                     Path = imgpath,
-                    Image = new BitmapImage(new Uri(imgpath, UriKind.Absolute)),
+                    Image = Source(imgpath),
                     SelectedSize = SelectedImageSize,
                     _Brush = BackgroundColor,
                     _Foreground = ForegroundColor,
-                    _DecorationsColor = DecorationsColor                   
+                    _DecorationsColor = DecorationsColor
                 };
             }
             catch { return null; }
+        }
+
+        private BitmapImage Source(string imgpath)
+        {
+            BitmapImage img = new BitmapImage();
+            using (var stream = File.OpenRead(imgpath))
+            {
+
+                img.BeginInit();
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.StreamSource = stream;
+                img.EndInit();
+            };
+            return img;
 
         }
 
@@ -740,6 +764,7 @@ namespace Metadataviewer
 
         private void ResetEditFields()
         {
+            EditVis = Visibility.Visible;
             EditCheckpointName = "";
             EditCheckpointHash = "";
             EditCheckpoint_New_Hash = "";
@@ -836,9 +861,9 @@ namespace Metadataviewer
                     return;
                 }
                 else
-                { 
-                    UpdateImageViewer_and_MetadataView(newpath, originalpath);
+                {
                     EditSaveSuccess = Visibility.Visible;
+                    UpdateImageViewer_and_MetadataView(newpath, originalpath);
                     SuccessTimer.Start();
                 }
             }
@@ -898,11 +923,13 @@ namespace Metadataviewer
         {
             ResetEditFields();
 
+            EditVis = Visibility.Hidden;
+
             EditCheckpointName = metadata.CheckpointName;
             EditCheckpointHash = metadata.CheckpointHash;
             Editfilepath = metadata.OriginalPath;
 
-            EditImage = new BitmapImage(new Uri(metadata.OriginalPath, UriKind.Absolute));
+            EditImage = Source(metadata.OriginalPath);
 
             if (metadata.Loras != null && metadata.Loras.Count > 0)
             {
@@ -947,11 +974,10 @@ namespace Metadataviewer
             }
         }
 
-        private void SuccessTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void SuccessTimer_Tick(object sender, EventArgs e)
         {
             EditSaveSuccess = Visibility.Hidden;
         }
-
         private void SetEditVisibility()
         {
             if (EditCheckpoint_New_Hash.Length == 0)
@@ -983,8 +1009,6 @@ namespace Metadataviewer
 
         private bool IsDropItem = false;
         private string DropItemPath = null;
-
-        private Timer SuccessTimer = new Timer() { Interval = 3000 };
 
         #endregion
 
@@ -1023,6 +1047,13 @@ namespace Metadataviewer
         {
             get => savebtnimg;
             set => SetProperty(ref savebtnimg, value);
+        }
+
+        private Visibility editvis = Visibility.Visible;
+        public Visibility EditVis
+        {
+            get => editvis;
+            set => SetProperty(ref editvis, value);
         }
 
         private string editfilepath = "";

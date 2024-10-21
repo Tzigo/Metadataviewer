@@ -30,6 +30,7 @@ namespace Metadataviewer
         public string ThumbNailPath = string.Empty; 
         public string _Name_HashSwitch = string.Empty;  
 
+
         public MainWindow()
         {
             InitializeComponent();
@@ -115,9 +116,6 @@ namespace Metadataviewer
 
                 MainGrid.Width = mainwidth;
 
-
-                //((StackPanel)Editscroll.Content).Width = Editscroll.Width - 20;
-
                 RightGrid.Width = rightsize;
                 RightGridScrollViewer.Width = rightsize;
                 pnginfo.Width = rightsize - 10;
@@ -133,8 +131,6 @@ namespace Metadataviewer
                 ImageViewer.Width = centersize;
             }
         }
-
-
         private void Tbox_TextChanged(object sender, TextChangedEventArgs e)
         {
             Tbox.Width = TopGrid.ActualWidth - 90;
@@ -250,33 +246,33 @@ namespace Metadataviewer
             }
         }
 
-        private void MiscResizeBtn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            MetaDataResizeTBox = "MiscResizeBtn";
-            StartResize = Mouse.GetPosition(this);
-            previewheight = MiscellaneousTboxGrid.ActualHeight;
-            Resize = true;
-            Mouse.OverrideCursor = Cursors.SizeNS;
-        }
+        //private void MiscResizeBtn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    MetaDataResizeTBox = "MiscResizeBtn";
+        //    StartResize = Mouse.GetPosition(this);
+        //    previewheight = MiscellaneousTboxGrid.ActualHeight;
+        //    Resize = true;
+        //    Mouse.OverrideCursor = Cursors.SizeNS;
+        //}
 
-        private void MiscResizeBtn_MouseEnter(object sender, MouseEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.SizeNS;
-            foreach (Line line in MiscResizeBtn.Children)
-            {
-                line.Stroke = new SolidColorBrush(Colors.DodgerBlue);
-            }
-        }
+        //private void MiscResizeBtn_MouseEnter(object sender, MouseEventArgs e)
+        //{
+        //    Mouse.OverrideCursor = Cursors.SizeNS;
+        //    foreach (Line line in MiscResizeBtn.Children)
+        //    {
+        //        line.Stroke = new SolidColorBrush(Colors.DodgerBlue);
+        //    }
+        //}
 
-        private void MiscResizeBtn_MouseLeave(object sender, MouseEventArgs e)
-        {
-            if (Resize) { return; }
-            Mouse.OverrideCursor = Cursors.Arrow;
-            foreach (Line line in MiscResizeBtn.Children)
-            {
-                line.Stroke = new SolidColorBrush(Colors.Gray);
-            }
-        }
+        //private void MiscResizeBtn_MouseLeave(object sender, MouseEventArgs e)
+        //{
+        //    if (Resize) { return; }
+        //    Mouse.OverrideCursor = Cursors.Arrow;
+        //    foreach (Line line in MiscResizeBtn.Children)
+        //    {
+        //        line.Stroke = new SolidColorBrush(Colors.Gray);
+        //    }
+        //}
 
         private void pnginfo_MouseMove(object sender, MouseEventArgs e)
         {
@@ -304,18 +300,18 @@ namespace Metadataviewer
                     else { EndResize(); }
 
                 }
-                else if (MetaDataResizeTBox == "MiscResizeBtn")
-                {
-                    if ((MiscellaneousTboxGrid.ActualHeight + resize) > MiscellaneousTboxGrid.MinHeight)
-                    {
-                        Grid grid = (Grid)MiscResizeBtn.Parent;
-                        grid.Height = previewheight + resize;
+                //else if (MetaDataResizeTBox == "MiscResizeBtn")
+                //{
+                //    if ((MiscellaneousTboxGrid.ActualHeight + resize) > MiscellaneousTboxGrid.MinHeight)
+                //    {
+                //        Grid grid = (Grid)MiscResizeBtn.Parent;
+                //        grid.Height = previewheight + resize;
 
-                        RightGridScrollViewer.ScrollToBottom();
-                    }
-                    else
-                    { EndResize(); }
-                }
+                //        RightGridScrollViewer.ScrollToBottom();
+                //    }
+                //    else
+                //    { EndResize(); }
+                //}
             }
             else if (MetaDataResizeTBox != string.Empty) { EndResize(); }
         }
@@ -341,14 +337,14 @@ namespace Metadataviewer
                 }
                 MetaDataResizeTBox = string.Empty;
             }
-            else if (MetaDataResizeTBox == "MiscResizeBtn")
-            {
-                foreach (Line line in MiscResizeBtn.Children)
-                {
-                    line.Stroke = new SolidColorBrush(Colors.Gray);
-                }
-                MetaDataResizeTBox = string.Empty;
-            }
+            //else if (MetaDataResizeTBox == "MiscResizeBtn")
+            //{
+            //    foreach (Line line in MiscResizeBtn.Children)
+            //    {
+            //        line.Stroke = new SolidColorBrush(Colors.Gray);
+            //    }
+            //    MetaDataResizeTBox = string.Empty;
+            //}
 
         }
 
@@ -389,9 +385,8 @@ namespace Metadataviewer
 
         private void SendToEditBtn_Click(object sender, RoutedEventArgs e)
         {
-   
-            stepslabel.Content = "window: " + this.Width.ToString() + "  maintab: " + MainTab.ActualWidth.ToString() + " maingrid: " + MainGrid.ActualWidth.ToString() + " editgrid: " + MainEditGrid.ActualWidth.ToString();
-            cfglabel.Content = "EditImgPanel:  " + EditImgPanel.ActualWidth + " EditViewGrid: " + EditViewGrid.ActualWidth + " Test: " + Test.ActualWidth;
+            MainEditGrid.Width = MainGrid.ActualWidth;
+
             if (ImageViewer.Items.Count > 0 && ThumbNailPath != string.Empty && System.IO.File.Exists(ThumbNailPath))
             {
                 OnEditBtnClick();
@@ -410,6 +405,24 @@ namespace Metadataviewer
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
             OnSaveBtnClick();
+        }
+
+        private void EditTab_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            MainEditGrid.Width = MainGrid.ActualWidth;
+        }
+
+
+        public event EventHandler ColorDemo;
+
+        protected virtual void OnColorDemo()
+        {
+            ColorDemo?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            OnColorDemo();
         }
     }
 }

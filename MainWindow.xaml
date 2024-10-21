@@ -45,7 +45,7 @@
                     <ColumnDefinition Width="7"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="LeftGrid" Background="{Binding BackgroundColor}" Grid.Column="0" Width="300" MinWidth="160" MaxWidth="390"/>
+                <Grid x:Name="LeftGrid" Background="{Binding BackgroundColor}" Grid.Column="0" Width="300" MinWidth="160" MaxWidth="390" Margin="0,10,0,0"/>
                 <Thumb x:Name="leftsplitter" Style="{StaticResource Splitter}" Grid.Column="1" DragDelta="LeftThumb_DragDelta" MouseEnter="leftsplitter_MouseEnter" MouseLeave="leftsplitter_MouseLeave"/>
                 <Grid x:Name="CenterGrid" Grid.Column="2" MinWidth="200" Background="{Binding BackgroundColor}">
                     <Grid.RowDefinitions>
@@ -99,6 +99,7 @@
                         </ItemsControl>
                     </Grid>
                     <Grid Grid.Row="2">
+                        <Button Background="{Binding BackgroundColor}"  Foreground="{Binding ForegroundColor}" Content="ColorTest" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" Click="Button_Click"/>
                         <Button x:Name="SendToEditBtn" HorizontalAlignment="Center" Background="{Binding BackgroundColor}" VerticalAlignment="Center" HorizontalContentAlignment="Center" Click="SendToEditBtn_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
@@ -195,12 +196,12 @@
                             <Label Content="Miscellaneous"  FontWeight="Bold" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}"/>
                             <Grid x:Name="MiscellaneousTboxGrid" MinHeight="80" Margin="0,0,0,10">
                                 <TextBox Text="{Binding Miscellaneous}" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" Height="{Binding MiscTBoxHeight}" MinHeight="80" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility = "Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
-                                <Grid x:Name="MiscResizeBtn" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="6,2" MouseLeftButtonDown="MiscResizeBtn_MouseLeftButtonDown" MouseEnter="MiscResizeBtn_MouseEnter" MouseLeave="MiscResizeBtn_MouseLeave">
+                                <!--<Grid x:Name="MiscResizeBtn" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="6,2" MouseLeftButtonDown="MiscResizeBtn_MouseLeftButtonDown" MouseEnter="MiscResizeBtn_MouseEnter" MouseLeave="MiscResizeBtn_MouseLeave">
                                     <Line Stroke="Gray" X1="17" Y1="19" X2="19" Y2="17" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                     <Line Stroke="Gray" X1="14" Y1="19" X2="19" Y2="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                     <Line Stroke="Gray" X1="11" Y1="19" X2="19" Y2="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                     <Line Stroke="Gray" X1="8" Y1="19" X2="19" Y2="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                                </Grid>
+                                </Grid>-->
                             </Grid>
                             <Grid Height="50"/>
 
@@ -209,8 +210,8 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem x:Name="EditTab" Header="Edit" FontWeight="Bold" Height="21" VerticalAlignment="Top">
-            <Grid x:Name="MainEditGrid" Background="Green" AllowDrop="True" Height="{Binding ActualHeight, ElementName=MainGrid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Width="{Binding ActualWidth, ElementName=MainGrid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+        <TabItem x:Name="EditTab" Header="Edit" FontWeight="Bold" Height="21" VerticalAlignment="Top" PreviewMouseDown="EditTab_PreviewMouseDown">
+            <Grid x:Name="MainEditGrid" Background="Transparent" AllowDrop="True" MaxHeight="{Binding ActualHeight, ElementName=MainGrid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
                 <Grid.Resources>
                     <Style TargetType="Grid">
                         <Setter Property="Background" Value="{Binding BackgroundColor}"/>
@@ -236,196 +237,198 @@
                         <Setter Property="Background" Value="{Binding BackgroundColor}"/>
                     </Style>
                 </Grid.Resources>
-                <Grid x:Name="Test" HorizontalAlignment="Center" Width="674" MinWidth="674" MaxWidth="674"> 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="2"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid x:Name="EditImgPanel" Grid.Column="0" Width="265" Background="{Binding BackgroundColor}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition Height="85" MinHeight="85"/>
-                        </Grid.RowDefinitions>
-                        <Grid x:Name="wrap" Grid.Row="0" Width="{Binding ActualWidth, ElementName=EditImgPanel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
-                            <Image x:Name="EditImg" Source="{Binding EditImage}" Stretch="Uniform" MaxWidth="{Binding ElementName=wrap, Path=ActualWidth}" MaxHeight="{Binding ElementName=wrap, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                        <StackPanel Grid.Row="1" Orientation="Vertical" Width="{Binding ActualWidth, ElementName=EditImgPanel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
-                            <Grid>
-                                <Grid Width="45" Height="45" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
-                                    <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Saved" Foreground="LimeGreen" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                                </Grid>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Button x:Name="SaveBtn" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="SaveBtn_Click">
-                                        <Button.Style>
-                                            <Style TargetType="Button">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="Button">
-                                                            <Border x:Name="brd" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="4" Background="{Binding BackgroundColor}">
-                                                                <StackPanel x:Name="stack" Width="40">
-                                                                    <Image Height="25" Width="25" Source="{Binding SaveBtnImage}" Margin="0,3,0,0"/>
-                                                                    <TextBlock Text="Save" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{Binding ForegroundColor}"/>
-                                                                </StackPanel>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="brd" Property="BorderBrush">
-                                                                        <Setter.Value>
-                                                                            <SolidColorBrush Color="LightBlue"/>
-                                                                        </Setter.Value>
-                                                                    </Setter>
-                                                                </Trigger>
-                                                                <Trigger Property="Button.IsPressed" Value="True">
-                                                                    <Setter TargetName="brd" Property="Background">
-                                                                        <Setter.Value >
-                                                                            <SolidColorBrush Color="LightBlue"/>
-                                                                        </Setter.Value>
-                                                                    </Setter>
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                    <ComboBox Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" ItemsSource="{Binding SaveTypList}" SelectedItem="{Binding SaveTyp}" Margin="20,0,0,0">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Path=SaveType}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
+                <Border BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="5" Margin="0,2,0,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid HorizontalAlignment="Center" Width="674" MinWidth="674" MaxWidth="674" MinHeight="350" MaxHeight="540">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MinWidth="265"/>
+                            <ColumnDefinition Width="2"/>
+                            <ColumnDefinition MinWidth="407"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid x:Name="EditImgPanel" Grid.Column="0" Width="265" Background="{Binding BackgroundColor}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="85" MinHeight="85"/>
+                            </Grid.RowDefinitions>
+                            <Grid x:Name="wrap" Grid.Row="0" Width="265">
+                                <Image x:Name="EditDragnDropImage" Source="{Binding DragnDropImage}" HorizontalAlignment="Center" VerticalAlignment="Center" Height="100" Width="100" Opacity="0.4" Visibility="{Binding EditVis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Image x:Name="EditImg" Source="{Binding EditImage}" Stretch="Uniform" MaxWidth="{Binding ElementName=wrap, Path=ActualWidth}" MaxHeight="{Binding ElementName=wrap, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
-                            <TextBlock Text="Overwriting the original file is not recommended." Foreground="Red" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="11"/>
-                        </StackPanel>
-                    </Grid>
-                    <Thumb Grid.Column="1" Width="2" Background="{Binding DecorationsColor}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-                    <Grid x:Name="EditViewGrid" Grid.Column="2" Width="407" MinWidth="407" MaxWidth="407" Background="{Binding BackgroundColor}" Panel.ZIndex="50">
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-                            <StackPanel x:Name="editstack" Orientation="Vertical" Margin="2,5,2,5">
-                                <Border x:Name="editcheckpointborder" Width="370" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="1,1,1,1" Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Vertical" Width="364">
-                                        <Label x:Name="FileNameLabel" Content="{Binding Editfilepath}" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" Foreground="{Binding ForegroundColor}" Background="{Binding BackgroundColor}" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="2,0,2,0"/>
-                                        <Grid Margin="2,0,2,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                            </Grid.ColumnDefinitions>
-                                            <Label Grid.Column="0" Content="Modelname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                            <Label Grid.Column="1" Content="{Binding EditCheckpointName}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
-                                        </Grid>
-                                        <Grid Margin="2,0,2,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                            </Grid.ColumnDefinitions>
-                                            <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                            <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Margin="2,0,2,5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                            </Grid.ColumnDefinitions>
-                                            <Label Grid.Column="0" Content="{Binding EditCheckpointHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                                            <DockPanel Grid.Column="1">
-                                                <Grid DockPanel.Dock="Right" Height="22" Width="22" Background="Aqua">
-                                                    <Line Stroke="Red" StrokeThickness="3" X1="2" X2="20" Y1="2" Y2="20" Visibility="{Binding EditCheckpointFalse}"/>
-                                                    <Line Stroke="Red" StrokeThickness="3" X1="20" X2="2" Y1="2" Y2="20" Visibility="{Binding EditCheckpointFalse}"/>
-                                                    <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" Visibility="{Binding EditCheckpointTrue}"/>
-                                                </Grid>
-                                                <TextBox DockPanel.Dock="Left" x:Name="CheckpointHashEditTbox" Text="{Binding EditCheckpoint_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                                            </DockPanel>
-                                        </Grid>
+                            <StackPanel Grid.Row="1" Orientation="Vertical" Width="{Binding ActualWidth, ElementName=EditImgPanel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                <Grid>
+                                    <Grid Width="45" Height="45" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding EditSaveSuccess}">
+                                        <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"/>
+                                        <TextBlock Text="Saved" Foreground="LimeGreen" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Button x:Name="SaveBtn" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="SaveBtn_Click">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border x:Name="brd" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="4" Background="{Binding BackgroundColor}">
+                                                                    <StackPanel x:Name="stack" Width="40">
+                                                                        <Image Height="25" Width="25" Source="{Binding SaveBtnImage}" Margin="0,3,0,0"/>
+                                                                        <TextBlock Text="Save" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{Binding ForegroundColor}"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="brd" Property="BorderBrush">
+                                                                            <Setter.Value>
+                                                                                <SolidColorBrush Color="LightBlue"/>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Trigger>
+                                                                    <Trigger Property="Button.IsPressed" Value="True">
+                                                                        <Setter TargetName="brd" Property="Background">
+                                                                            <Setter.Value >
+                                                                                <SolidColorBrush Color="LightBlue"/>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <ComboBox Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" ItemsSource="{Binding SaveTypList}" SelectedItem="{Binding SaveTyp}" Margin="20,0,0,0">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Path=SaveType}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </StackPanel>
-                                </Border>
-                                <ItemsControl x:Name="LoraEdit" ItemsSource="{Binding LoraHashEdits}" Background="{Binding BackgroundColor}">
-                                    <ItemsControl.Resources>
-                                        <Style TargetType="Grid">
-                                            <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
-                                        </Style>
-                                        <Style TargetType="StackPanel">
-                                            <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
-                                        </Style>
-                                        <Style TargetType="Label">
-                                            <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
-                                            <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
-                                            <Setter Property="Height" Value="30"/>
-                                        </Style>
-                                        <Style TargetType="TextBox">
-                                            <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
-                                            <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
-                                            <Setter Property="BorderThickness" Value="1"/>
-                                            <Setter Property="BorderBrush" Value="{Binding _DecorationsColor}"/>
-                                            <Setter Property="Height" Value="30"/>
-                                            <Setter Property="Margin" Value="1"/>
-                                        </Style>
-                                        <!--<Style TargetType="TextBlock">
+                                </Grid>
+                                <TextBlock Text="Overwriting the original file is not recommended." Foreground="Red" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="11"/>
+                            </StackPanel>
+                        </Grid>
+                        <Thumb Grid.Column="1" Width="2" Background="{Binding DecorationsColor}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                        <Grid x:Name="EditViewGrid" Grid.Column="2" Width="407" MinWidth="407" MaxWidth="407" Background="{Binding BackgroundColor}">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="editstack" Orientation="Vertical" Margin="2,5,2,5">
+                                    <Border x:Name="editcheckpointborder" Width="370" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="1,1,1,1" Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Vertical" Width="364">
+                                            <Label x:Name="FileNameLabel" Content="{Binding Editfilepath}" BorderBrush="{Binding DecorationsColor}" BorderThickness="2" Foreground="{Binding ForegroundColor}" Background="{Binding BackgroundColor}" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="2,0,2,0"/>
+                                            <Grid Margin="2,0,2,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Content="Modelname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                <Label Grid.Column="1" Content="{Binding EditCheckpointName}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
+                                            </Grid>
+                                            <Grid Margin="2,0,2,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <Grid Margin="2,0,2,5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Content="{Binding EditCheckpointHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                                <DockPanel Grid.Column="1">
+                                                    <Grid DockPanel.Dock="Right" Height="22" Width="22">
+                                                        <Line Stroke="Red" StrokeThickness="3" X1="2" X2="20" Y1="2" Y2="20" Visibility="{Binding EditCheckpointFalse}"/>
+                                                        <Line Stroke="Red" StrokeThickness="3" X1="20" X2="2" Y1="2" Y2="20" Visibility="{Binding EditCheckpointFalse}"/>
+                                                        <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" Visibility="{Binding EditCheckpointTrue}"/>
+                                                    </Grid>
+                                                    <TextBox DockPanel.Dock="Left" x:Name="CheckpointHashEditTbox" Text="{Binding EditCheckpoint_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Background="{Binding BackgroundColor}" Foreground="{Binding ForegroundColor}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                                </DockPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                    <ItemsControl x:Name="LoraEdit" ItemsSource="{Binding LoraHashEdits}" Background="{Binding BackgroundColor}">
+                                        <ItemsControl.Resources>
+                                            <Style TargetType="Grid">
+                                                <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                            </Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                            </Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
+                                                <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                                <Setter Property="Height" Value="30"/>
+                                            </Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
+                                                <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="BorderBrush" Value="{Binding _DecorationsColor}"/>
+                                                <Setter Property="Height" Value="30"/>
+                                                <Setter Property="Margin" Value="1"/>
+                                            </Style>
+                                            <!--<Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="{Binding _ForegroundColor}"/>
                                     <Setter Property="Background" Value="{Binding _BackgroundColor}"/>
                                 </Style>-->
-                                    </ItemsControl.Resources>
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BorderBrush="{Binding _DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="1,1,1,1" Margin="2,0,2,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <StackPanel Orientation="Vertical" Width="364">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <Label Grid.Column="0" Content="Loraname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                                        <Label Grid.Column="1" Content="{Binding Name}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
-                                                    </Grid>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                                        <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                                                    </Grid>
-                                                    <Grid Margin="0,0,0,5">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <Label Grid.Column="0" Content="{Binding EditLoraHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                                                        <DockPanel Grid.Column="1">
-                                                            <Grid DockPanel.Dock="Right" Height="22" Width="22">
-                                                                <Line Stroke="Red" StrokeThickness="3" X1="2" X2="20" Y1="2" Y2="20" Visibility="{Binding _EditLoraFalse}"/>
-                                                                <Line Stroke="Red" StrokeThickness="3" X1="20" X2="2" Y1="2" Y2="20" Visibility="{Binding _EditLoraFalse}"/>
-                                                                <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" Visibility="{Binding _EditLoraTrue}"/>
-                                                            </Grid>
-                                                            <TextBox Grid.Column="1" DockPanel.Dock="Left" x:Name="CheckpointHashEditTbox" Background="{Binding _BackgroundColor}" Foreground="{Binding _ForegroundColor}" Text="{Binding EditLora_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                                                        </DockPanel>
-                                                    </Grid>
-                                                </StackPanel>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                    <ItemsControl.Template>
-                                        <ControlTemplate>
-                                            <ItemsPresenter />
-                                        </ControlTemplate>
-                                    </ItemsControl.Template>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ScrollViewer>
+                                        </ItemsControl.Resources>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{Binding _DecorationsColor}" BorderThickness="2" CornerRadius="5" Padding="1,1,1,1" Margin="2,0,2,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Vertical" Width="364">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Label Grid.Column="0" Content="Loraname:" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                            <Label Grid.Column="1" Content="{Binding Name}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Normal"/>
+                                                        </Grid>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Label Grid.Column="0"  Content="Current Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                            <Label Grid.Column="1" Content="New Hash" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                                        </Grid>
+                                                        <Grid Margin="0,0,0,5">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Label Grid.Column="0" Content="{Binding EditLoraHash}" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                                            <DockPanel Grid.Column="1">
+                                                                <Grid DockPanel.Dock="Right" Height="22" Width="22">
+                                                                    <Line Stroke="Red" StrokeThickness="3" X1="2" X2="20" Y1="2" Y2="20" Visibility="{Binding _EditLoraFalse}"/>
+                                                                    <Line Stroke="Red" StrokeThickness="3" X1="20" X2="2" Y1="2" Y2="20" Visibility="{Binding _EditLoraFalse}"/>
+                                                                    <Polyline Stroke="LimeGreen" StrokeThickness="3" Points="2,2 11,18 20,2" Visibility="{Binding _EditLoraTrue}"/>
+                                                                </Grid>
+                                                                <TextBox Grid.Column="1" DockPanel.Dock="Left" x:Name="CheckpointHashEditTbox" Background="{Binding _BackgroundColor}" Foreground="{Binding _ForegroundColor}" Text="{Binding EditLora_New_Hash, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontWeight="Normal" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                                            </DockPanel>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.Template>
+                                            <ControlTemplate>
+                                                <ItemsPresenter />
+                                            </ControlTemplate>
+                                        </ItemsControl.Template>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
                     </Grid>
-                </Grid>
-
-
+                </Border>
             </Grid>
         </TabItem>
+
     </TabControl>
 </Window>
