@@ -4,7 +4,7 @@ A small handy portable desktop tool for reading and editing metadata* for images
 
 A simple file explorer and an image preview with thumbnails are integrated.
 
-[Download] (https://github.com/Tzigo/Metadataviewer/raw/refs/heads/master/Metadataviewer.exe)
+[Download](https://github.com/Tzigo/Metadataviewer/raw/refs/heads/master/Metadataviewer.exe)
 
 
 
