@@ -588,8 +588,9 @@ namespace Metadataviewer
         {
             if (File.Exists(filepath))
             {
-                string file_extension = Path.GetExtension(filepath).ToLower();
-                if (file_extension == ".png" || file_extension == ".jpg" || file_extension == ".jpeg" || file_extension == ".webp") { return true; }
+                if (Path.GetExtension(filepath).ToLower() == ".png") { return true; }
+                //string file_extension = Path.GetExtension(filepath).ToLower();
+                //if (file_extension == ".png" || file_extension == ".jpg" || file_extension == ".jpeg" || file_extension == ".webp") { return true; }
             }
             return false;
         }
