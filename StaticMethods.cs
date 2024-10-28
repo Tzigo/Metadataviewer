@@ -1,10 +1,12 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security.Principal;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 
 namespace Metadataviewer
 {
@@ -13,6 +15,41 @@ namespace Metadataviewer
         private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
         private const string RegistryValueName = "AppsUseLightTheme";
+
+        private static string savefile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
+
+        static Settings settings;
+        public static void SaveOptions()
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+            using (StreamWriter writer = new StreamWriter(savefile))
+            {
+                serializer.Serialize(writer, settings);
+            }
+        }
+
+        public static Settings LoadOptions()
+        {
+            if (File.Exists(savefile))
+            {
+                try
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+                    using (StreamReader reader = new StreamReader(savefile))
+                    {
+                        settings = serializer.Deserialize(reader) as Settings;
+                    }
+                    return settings;
+                }
+                catch
+                {
+                    settings = new Settings() { ThumbNailSize = 0, ColorTheme = 0 };
+                    return settings;
+                }
+            }
+            settings = new Settings() { ThumbNailSize = 0, ColorTheme = 0 };
+            return settings;
+        }
 
         public enum WindowsTheme
         {
@@ -44,7 +81,7 @@ namespace Metadataviewer
             catch { return WindowsTheme.Light; }
         }
 
-        // userset 0 = kein userset (versuche windowstheme zu verwenden), userset 1 = theme dark, userset 2 = theme light
+        // userset 0 = Auto (versuche windows theme zu verwenden), userset 1 = theme dark, userset 2 = theme light
         public static ColorTheme GetColorTheme(int userset)
         {
             if (userset == 0)
@@ -58,6 +95,16 @@ namespace Metadataviewer
             if (userset == 1) { return new DarkTheme(); }
             else { return new LightTheme(); }
         }
+    }
+
+    public class Settings
+    {
+        [XmlAttribute("ColorTheme")]
+        public int ColorTheme { get; set; }
+
+        [XmlAttribute("ThumbNailSize")]
+        public int ThumbNailSize { get; set; }
+
     }
 
     public class ColorTheme

@@ -28,10 +28,11 @@ namespace Metadataviewer
         public MetaData metadata = new MetaData();
         private DispatcherTimer SuccessTimer = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(3) };
         private ColorTheme colorTheme;
+        Settings settings;
         public MainViewModel()
         {
             CreateImages();
-            SetColorTheme(1);
+
             mainWindow = new MainWindow();
             mainWindow.DataContext = this;
 
@@ -39,7 +40,6 @@ namespace Metadataviewer
 
             FileExplorer = new FileExplorerUC(true) { Width = 390};
             mainWindow.LeftGrid.Children.Add(FileExplorer);
-            FileExplorer.SetColorTheme(colorTheme); 
             FileExplorer.Width = mainWindow.LeftGrid.Width;
             FileExplorer.Height = mainWindow.LeftGrid.Height;
             FileExplorer.SetPathPropertyChanged += FileExplorer_SetPathPropertyChanged;
@@ -48,11 +48,11 @@ namespace Metadataviewer
 
             LoraHashEdits = new ObservableCollection<LoraHashEdit>();
 
-
             ImageCollection = new ObservableCollection<ThumbNail>();
             ImageCollection.CollectionChanged += ImageCollection_CollectionChanged;
-            SuccessTimer.Tick += SuccessTimer_Tick; ;
-            SelectedImageSize = 100;
+            SuccessTimer.Tick += SuccessTimer_Tick;
+
+            LoadSettings();
         }
 
 
@@ -68,13 +68,47 @@ namespace Metadataviewer
             mainWindow.Name_HashSwitch += MainWindow_Name_HashSwitch;
             mainWindow.MainEditGrid.DragOver += EditGrid_DragOver;
             mainWindow.MainEditGrid.Drop += EditGrid_Drop;
-            mainWindow.ColorDemo += MainWindow_ColorDemo;
+            mainWindow.WindowClosing += MainWindow_WindowClosing;
+            mainWindow.ChangeColorTheme += MainWindow_ChangeColorTheme;
+            mainWindow.ChangeThumbnailSize += MainWindow_ChangeThumbnailSize;
         }
 
-        private void MainWindow_ColorDemo(object sender, EventArgs e)
+        private void MainWindow_WindowClosing(object sender, EventArgs e)
         {
-            if (colorTheme.BackGround.Color == Colors.White) { SetColorTheme(1); }
-            else { SetColorTheme(0); }
+            MainWindow_WindowClosing(sender, e, mainWindow);
+        }
+
+        private void MainWindow_WindowClosing(object sender, EventArgs e, MainWindow mainWindow)
+        {
+            StaticMethods.SaveOptions();
+            mainWindow.IsSettingsSaved = true;
+            Application.Current.Shutdown();
+        }
+
+        private void LoadSettings()
+        {
+            settings = StaticMethods.LoadOptions();
+            if (settings.ThumbNailSize == 0)
+            {
+                SmallThumb = Visibility.Visible;
+                SetThumnnailSize(0);
+            }
+            else if (settings.ThumbNailSize == 1) 
+            { 
+                MediumThumb = Visibility.Visible;
+                SetThumnnailSize(1);
+            }
+            else if (settings.ThumbNailSize == 2)
+            {
+                LargeThumb = Visibility.Visible;
+                SetThumnnailSize(2);
+            }
+            if (settings.ColorTheme == 0) { AutoTheme = Visibility.Visible; }
+            else if(settings.ColorTheme == 1) { DarkTheme = Visibility.Visible; }
+            else if (settings.ColorTheme == 2) { LightTheme = Visibility.Visible; }
+
+            SetColorTheme(settings.ColorTheme);
+            FileExplorer.SetColorTheme(colorTheme);
         }
 
         private void CreateImages()
@@ -88,6 +122,7 @@ namespace Metadataviewer
             EditBtnWhite = Img("editing-white.png");
             SaveBtnWhite = Img("save-file_white.png");
             SaveBtnBlack = Img("save-file_black.png");
+            SettingsImage = Img("settings.png");
         }
 
         private BitmapImage Img(string name)
@@ -188,6 +223,36 @@ namespace Metadataviewer
         #endregion
 
         #region Methods ColorTheme
+        private void MainWindow_ChangeColorTheme(object sender, EventArgs e)
+        {
+            if (mainWindow.ColorTheme == 0)
+            {
+                AutoTheme = Visibility.Visible;
+                LightTheme = Visibility.Hidden;
+                DarkTheme = Visibility.Hidden;
+
+                settings.ColorTheme = 0;
+                SetColorTheme(0);
+            }
+            else if (mainWindow.ColorTheme == 1)
+            {
+                AutoTheme = Visibility.Hidden;
+                LightTheme = Visibility.Hidden;
+                DarkTheme = Visibility.Visible;
+
+                settings.ColorTheme = 1;
+                SetColorTheme(1);
+            }
+            else if (mainWindow.ColorTheme == 2)
+            {
+                AutoTheme = Visibility.Hidden;
+                LightTheme = Visibility.Visible;
+                DarkTheme = Visibility.Hidden;
+
+                settings.ColorTheme = 2;
+                SetColorTheme(2);
+            }
+        }
 
         public void SetColorTheme(int userselect)
         {
@@ -357,12 +422,43 @@ namespace Metadataviewer
         private void MainWindow_ThumbSizeChange(object sender, EventArgs e)
         {
             string btn_name = mainWindow.ThumbSizeBtnName;
-            if (btn_name != string.Empty) { SetImageSize(btn_name); }
+            if (btn_name != string.Empty)
+            {
+                if (btn_name == "LargeBtn") { SetThumnnailSize(2); }
+                else if (btn_name == "MediumBtn") { SetThumnnailSize(1); }
+                else if (btn_name == "SmallBtn") { SetThumnnailSize(0); }
+            }
         }
 
-        private void SetImageSize(string btn_name)
+        private void MainWindow_ChangeThumbnailSize(object sender, EventArgs e)
         {
-            if (btn_name == "LargeBtn")
+            int thumbsize = mainWindow.ThumbnailSize;
+            settings.ThumbNailSize = thumbsize;
+            if (thumbsize == 0)
+            {
+                SmallThumb = Visibility.Visible;
+                MediumThumb = Visibility.Hidden;
+                LargeThumb = Visibility.Hidden; 
+            }
+            else if (thumbsize == 1)
+            {
+                SmallThumb = Visibility.Hidden;
+                MediumThumb = Visibility.Visible;
+                LargeThumb = Visibility.Hidden;
+            }
+            else if (thumbsize == 2)
+            {
+                SmallThumb = Visibility.Hidden;
+                MediumThumb = Visibility.Hidden;
+                LargeThumb = Visibility.Visible;
+            }
+            SetThumnnailSize(thumbsize);
+
+        }
+
+        private void SetThumnnailSize(int size)
+        {
+            if (size == 2)
             {
                 CheckSmall = UnChecked;
                 CheckMedium = UnChecked;
@@ -374,7 +470,7 @@ namespace Metadataviewer
                     thumb.SelectedSize = SelectedImageSize;
                 }
             }
-            if (btn_name == "MediumBtn")
+            else if (size == 1)
             {
                 CheckSmall = UnChecked;
                 CheckLarge = UnChecked;
@@ -386,7 +482,7 @@ namespace Metadataviewer
                     thumb.SelectedSize = SelectedImageSize;
                 }
             }
-            if (btn_name == "SmallBtn")
+            else if (size == 0)
             {
                 CheckMedium = UnChecked;
                 CheckLarge = UnChecked;
@@ -500,6 +596,7 @@ namespace Metadataviewer
 
         private void ShowSelectedThumbnailData(string path)
         {
+            if (!File.Exists(path)) { MessageBox.Show("File not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error); return; }
             foreach (ThumbNail thumb in ImageCollection)
             {
                 if (thumb.Path == path)
@@ -1110,5 +1207,59 @@ namespace Metadataviewer
         }
 
         #endregion
+
+        #region Properties Settings
+
+        private Visibility darktheme = Visibility.Hidden;
+        public Visibility DarkTheme
+        {
+            get => darktheme;
+            set => SetProperty(ref darktheme, value);
+        }
+
+        private Visibility lighttheme = Visibility.Hidden;
+        public Visibility LightTheme
+        {
+            get => lighttheme;
+            set => SetProperty(ref lighttheme, value);
+        }
+
+        private Visibility autotheme = Visibility.Hidden;
+        public Visibility AutoTheme
+        {
+            get => autotheme;
+            set => SetProperty(ref autotheme, value);
+        }
+
+        private Visibility smallthumb = Visibility.Hidden;
+        public Visibility SmallThumb
+        {
+            get => smallthumb;
+            set => SetProperty(ref smallthumb, value);
+        }
+
+        private Visibility mediumthumb = Visibility.Hidden;
+        public Visibility MediumThumb
+        {
+            get => mediumthumb;
+            set => SetProperty(ref mediumthumb, value);
+        }
+
+        private Visibility largethumb = Visibility.Hidden;
+        public Visibility LargeThumb
+        {
+            get => largethumb;
+            set => SetProperty(ref largethumb, value);
+        }
+
+        private BitmapImage settingsimg;
+        public BitmapImage SettingsImage
+        {
+            get => settingsimg;
+            set => SetProperty(ref settingsimg, value);
+        }
+
+        #endregion
+
     }
 }

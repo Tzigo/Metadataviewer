@@ -412,17 +412,84 @@ namespace Metadataviewer
             MainEditGrid.Width = MainGrid.ActualWidth;
         }
 
+        #region SettingsTab
 
-        public event EventHandler ColorDemo;
-
-        protected virtual void OnColorDemo()
+        private void SettingsTab_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            ColorDemo?.Invoke(this, EventArgs.Empty);
+            MainSettingGrid.Width = MainGrid.ActualWidth;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public int ColorTheme { get; set; } 
+
+        public event EventHandler ChangeColorTheme;
+
+        protected virtual void OnChangeColorTheme()
         {
-            OnColorDemo();
+            ChangeColorTheme?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ColorThemeAutoChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ColorTheme = 0;
+            OnChangeColorTheme();
+        }
+
+        private void ColorThemeDarkChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ColorTheme = 1;
+            OnChangeColorTheme();
+        }
+
+        private void ColorThemeLightChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ColorTheme = 2;
+            OnChangeColorTheme();
+        }
+
+        public int ThumbnailSize { get; set; }
+
+        public event EventHandler ChangeThumbnailSize;
+
+        protected virtual void OnChangeThumbnailSize()
+        {
+            ChangeThumbnailSize?.Invoke(this, EventArgs.Empty); 
+        }
+
+        private void SmallThumbnailChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ThumbnailSize = 0;
+            OnChangeThumbnailSize();
+        }
+
+        private void MediumThumbnailChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ThumbnailSize = 1;
+            OnChangeThumbnailSize();
+        }
+
+        private void LargeThumbnailChkBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ThumbnailSize = 2;
+            OnChangeThumbnailSize();
+        }
+
+        #endregion
+
+        public bool IsSettingsSaved = false;
+
+        public event EventHandler WindowClosing;
+
+        protected virtual void OnWindowClosing()
+        {
+            WindowClosing?.Invoke(this, EventArgs.Empty);
+        }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (IsSettingsSaved == false)
+            {
+                e.Cancel = true;
+                OnWindowClosing();
+            }
         }
     }
 }
